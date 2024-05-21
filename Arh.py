@@ -1,5 +1,4 @@
 import collections
-import os
 
 
 class ShannonFanoNode:
@@ -8,7 +7,6 @@ class ShannonFanoNode:
         self.left = None
         self.right = None
         self.code = ''
-
 
 def shannon_fano_tree(symbols, frequencies):
     if len(symbols) == 0:
@@ -36,7 +34,6 @@ def shannon_fano_tree(symbols, frequencies):
 
     return node
 
-
 def build_shannon_fano_codes(root, prefix, result):
     if root is None:
         return
@@ -47,10 +44,8 @@ def build_shannon_fano_codes(root, prefix, result):
     build_shannon_fano_codes(root.left, prefix + '0', result)
     build_shannon_fano_codes(root.right, prefix + '1', result)
 
-
 def encode(text, codes):
     return ''.join(codes[byte] for byte in text)
-
 
 def decode(encoded_text, root):
     decoded_bytes = bytearray()
@@ -67,7 +62,6 @@ def decode(encoded_text, root):
             current_node = root
 
     return bytes(decoded_bytes)
-
 
 def compress_file(input_file, output_file):
     with open(input_file, 'rb') as file:
@@ -96,9 +90,8 @@ def compress_file(input_file, output_file):
             file.write(symbol.to_bytes(1, 'big'))
             code_len = len(codes[symbol])
             file.write(code_len.to_bytes(1, 'big'))
-            file.write(int(codes[symbol], 2).to_bytes((code_len + 7) // 8, 'big'))
+            file.write(int(codes[symbol], 2).to_bytes((code_len+ 7) // 8, 'big'))
         file.write(encoded_data)
-
 
 def decompress_file(input_file, output_file):
     with open(input_file, 'rb') as file:
@@ -122,13 +115,13 @@ def decompress_file(input_file, output_file):
 
     root = ShannonFanoNode()
 
-    for symbol, code in reverse_codes.items():
+    for bin_code, symbol in reverse_codes.items():
         current_node = root
-        for bit in code:
+        for bit in bin_code:
             if bit == '0':
                 if current_node.left is None:
                     current_node.left = ShannonFanoNode()
-                    current_node = current_node.left
+                current_node = current_node.left
             else:
                 if current_node.right is None:
                     current_node.right = ShannonFanoNode()
@@ -139,7 +132,6 @@ def decompress_file(input_file, output_file):
 
     with open(output_file, 'wb') as file:
         file.write(decoded_bytes)
-
 
 if __name__ == "__main__":
     choice = input("Введите 'c' для сжатия и 'd' для разархивации: ").strip().lower()
