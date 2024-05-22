@@ -1,8 +1,6 @@
 import collections
 
-
 class ShannonFanoNode:
-    # представления узла в дереве, содержащий символ, левого и правого потомков
     def __init__(self):
         self.symbol = None
         self.left = None
@@ -10,10 +8,6 @@ class ShannonFanoNode:
         self.code = ''
 
 def shannon_fano_tree(symbols, frequencies):
-    # Рекурсивная функция для построения дерева
-    # Делит список символов на два подсписка с примерно равными суммами частот
-    # Создает узел и рекурсивно создает левую и правую ветви дерева
-    # если символов нет возвращает None если символ один создает и возвращает узел с этим символом
     if len(symbols) == 0:
         return None
 
@@ -40,9 +34,6 @@ def shannon_fano_tree(symbols, frequencies):
     return node
 
 def build_shannon_fano_codes(root, prefix, result):
-    # рекурсивная функция для генерации бинарных кодов на основе дерева
-    # в обходе дерева генерирует коды 0 для левой ветви и 1 для правой
-    # устанавливает коды для символов в листовых узлах и сохраняет их в result
     if root is None:
         return
 
@@ -53,12 +44,9 @@ def build_shannon_fano_codes(root, prefix, result):
     build_shannon_fano_codes(root.right, prefix + '1', result)
 
 def encode(text, codes):
-    # для каждого байта текста находит соответствующий ему бинарный код в словаре codes
-    # соединяет все коды в одну длинную битовую строку
     return ''.join(codes[byte] for byte in text)
 
 def decode(encoded_text, root):
-    # декодирует битовую строку в исходный текст, используя дерево, построенное на основе алгоритма Shannon-Fano
     decoded_bytes = bytearray()
     current_node = root
 
@@ -75,16 +63,6 @@ def decode(encoded_text, root):
     return bytes(decoded_bytes)
 
 def compress_file(input_file, output_file):
-    # чтение данных читает исходный файл и подсчитывает частоты символов
-    # построение дерева и генерация кодов: строит дерево и генерирует шенноново-фано коды
-    # сжатие данных
-    # конвертирует текст в закодированную строку с использованием кодов
-    # добавляет дополнительные биты для выравнивания до байта
-    # записывает закодированные данные по байтам
-    # запись метаданных и данных:
-    # пишет количество уникальных символов и количество добавочных битов
-    # пишет коды символов
-    # пишет закодированные данные
     with open(input_file, 'rb') as file:
         text = file.read()
 
@@ -111,18 +89,10 @@ def compress_file(input_file, output_file):
             file.write(symbol.to_bytes(1, 'big'))
             code_len = len(codes[symbol])
             file.write(code_len.to_bytes(1, 'big'))
-            file.write(int(codes[symbol], 2).to_bytes((code_len+ 7) // 8, 'big'))
+            file.write(int(codes[symbol], 2).to_bytes((code_len + 7) // 8, 'big'))
         file.write(encoded_data)
 
 def decompress_file(input_file, output_file):
-    # чтение метаданных: извлекает количество уникальных символов и количество добавочных битов
-    # восстановление кодов
-    # читает символы, длину кодов и сами коды
-    # воссоздает бинарные коды и обратное отображение код-символ
-    # преобразование в битовую строку: перекодирует все байты в битовую строку с учетом добавочных битов
-    # построение дерева Shannon-Fano: воссоздает дерево по бинарным кодам
-    # расшифровка данных: декодирует битовую строку с использованием построенного дерева
-    # запись результата: сохраняет расшифрованный текст в выходной файл
     with open(input_file, 'rb') as file:
         len_codes = int.from_bytes(file.read(2), 'big')  # Читаем кол-во уникальных символов
         padded_info = int.from_bytes(file.read(1), 'big')  # Читаем кол-во добавочных битов
@@ -143,7 +113,6 @@ def decompress_file(input_file, output_file):
     bit_string = bit_string[:-padded_info]
 
     root = ShannonFanoNode()
-
     for bin_code, symbol in reverse_codes.items():
         current_node = root
         for bit in bin_code:
