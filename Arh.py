@@ -1,4 +1,6 @@
 import collections
+import os
+from tqdm import tqdm
 
 class ShannonFanoNode:
     def __init__(self):
@@ -78,13 +80,13 @@ def compress_file(input_file, output_file):
     padded_info = 8 - len(encoded_text) % 8
     encoded_text += '0' * padded_info
 
-    for i in range(0, len(encoded_text), 8):
+    for i in tqdm(range(0, len(encoded_text), 8), desc="Сжатие"):
         byte = encoded_text[i:i + 8]
         encoded_data.append(int(byte, 2))
 
     with open(output_file, 'wb') as file:
-        file.write(len(codes).to_bytes(2, 'big'))  # Записываем кол-во уникальных символов
-        file.write(padded_info.to_bytes(1, 'big'))  # Записываем кол-во добавочных битов
+        file.write(len(codes).to_bytes(2, 'big'))
+        file.write(padded_info.to_bytes(1, 'big'))
         for symbol in codes:
             file.write(symbol.to_bytes(1, 'big'))
             code_len = len(codes[symbol])
@@ -92,10 +94,19 @@ def compress_file(input_file, output_file):
             file.write(int(codes[symbol], 2).to_bytes((code_len + 7) // 8, 'big'))
         file.write(encoded_data)
 
+def process_files(file_list, output_prefix):
+    files = file_list.split(',')
+    for file in files:
+        file = file.strip()
+        file_name = os.path.basename(file)
+        output_file = os.path.join(output_prefix, f"{file_name}.sfn")
+        compress_file(file, output_file)
+        print(f"Файл {file} сжат и сохранен как {output_file}")
+
 def decompress_file(input_file, output_file):
     with open(input_file, 'rb') as file:
-        len_codes = int.from_bytes(file.read(2), 'big')  # Читаем кол-во уникальных символов
-        padded_info = int.from_bytes(file.read(1), 'big')  # Читаем кол-во добавочных битов
+        len_codes = int.from_bytes(file.read(2), 'big')
+        padded_info = int.from_bytes(file.read(1), 'big')
 
         codes = {}
         reverse_codes = {}
@@ -135,12 +146,13 @@ if __name__ == "__main__":
     choice = input("Введите 'c' для сжатия и 'd' для разархивации: ").strip().lower()
 
     if choice == 'c':
-        input_file = input("Введите путь к исходному файлу: ").strip('\"')
-        output_file = input("Введите путь для сохранения сжатого файла, включая имя файла: ").strip('\"')
-        compress_file(input_file, output_file)
+        input_files = input("Введите пути к исходным файлам, разделённые запятой: ").strip()
+        output_prefix = input("Введите путь до папки для сохранения сжатых файлов: ").strip()
+        os.makedirs(output_prefix, exist_ok=True)
+        process_files(input_files, output_prefix)
         print("Сжатие завершено.")
     elif choice == 'd':
-        input_file = input("Введите путь к сжатому файлу: ").strip('\"')
+        input_file = input("Введите путь к сжатому файлу: ").strip().strip('\"')
         output_file = input("Введите путь для сохранения разархивированного файла, включая имя файла: ").strip('\"')
         decompress_file(input_file, output_file)
         print("Разархивация завершена.")
