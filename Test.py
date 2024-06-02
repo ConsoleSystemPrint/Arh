@@ -40,7 +40,7 @@ class TestShannonFanoCompression(unittest.TestCase):
         self.assertEqual(decoded_text, text)
 
     def test_file_compression_decompression(self):
-        original_text = "This is a test text for Shannon-Fano compression."
+        original_text = "Тест"
 
         with tempfile.NamedTemporaryFile(delete=False) as input_file:
             input_file.write(original_text.encode('utf-8'))
